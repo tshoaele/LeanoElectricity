@@ -1,497 +1,576 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Unit Calculator</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#151922" />
+<meta name="description" content="A private prepaid electricity unit calculator for Ekurhuleni Domestic B estimates." />
+<title>Leano Complex Calculator</title>
+<link rel="manifest" href="manifest.webmanifest" />
 <style>
   :root {
-    --bg: #f0f2f5;
-    --panel: #ffffff;
-    --border: #dde1e8;
-    --accent: #00a870;
-    --accent2: #0070cc;
-    --warn: #d94f00;
-    --text: #1a2030;
-    --muted: #8492a6;
-    --mono: 'Share Tech Mono', monospace;
-    --sans: 'Barlow', sans-serif;
+    --accent: #00e5a0;
+    --accent2: #00b7ff;
+    --warn: #ff9b54;
+    --danger: #ff6b6b;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  body[data-theme="dark"] {
+    --bg: #151922;
+    --panel: rgba(28, 34, 48, 0.9);
+    --panel-solid: #1c2230;
+    --border: #2d374c;
+    --border-soft: rgba(255,255,255,0.08);
+    --text: #f5f7fb;
+    --muted: #9aa7bb;
+    --muted2: #64748b;
+    --shadow: rgba(0,0,0,0.45);
+    --input-bg: rgba(10,14,22,0.58);
+    --body-bg-1: #10141d;
+    --body-bg-2: #18202d;
+    --body-bg-3: #111827;
+    --grid-line: rgba(255,255,255,0.025);
+  }
+
+  body[data-theme="light"] {
+    --bg: #eef3f8;
+    --panel: rgba(255,255,255,0.92);
+    --panel-solid: #ffffff;
+    --border: #d7e0ec;
+    --border-soft: rgba(15,23,42,0.1);
+    --text: #111827;
+    --muted: #526175;
+    --muted2: #7b8798;
+    --shadow: rgba(15,23,42,0.16);
+    --input-bg: rgba(255,255,255,0.88);
+    --body-bg-1: #eef3f8;
+    --body-bg-2: #dfeaf5;
+    --body-bg-3: #f8fbff;
+    --grid-line: rgba(15,23,42,0.035);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
 
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
     min-height: 100vh;
+    font-family: var(--sans);
+    color: var(--text);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    background-image: 
-      radial-gradient(ellipse at 20% 50%, rgba(0,168,112,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 20%, rgba(0,112,204,0.06) 0%, transparent 60%);
+    padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+    background:
+      radial-gradient(circle at top, rgba(0,229,160,0.13), transparent 34%),
+      radial-gradient(circle at 80% 20%, rgba(0,183,255,0.13), transparent 34%),
+      linear-gradient(135deg, var(--body-bg-1), var(--body-bg-2) 50%, var(--body-bg-3));
   }
 
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: radial-gradient(circle at center, black, transparent 75%);
+  }
+
+  button, input { font: inherit; }
+  button:focus-visible, input:focus-visible { outline: 3px solid rgba(0,229,160,0.35); outline-offset: 2px; }
+
   .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 16px;
     width: 100%;
     max-width: 480px;
     overflow: hidden;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+    position: relative;
+    border-radius: 22px;
+    border: 1px solid var(--border-soft);
+    background: var(--panel);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 30px 90px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.08);
   }
 
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(0,229,160,0.12), transparent 42%, rgba(0,183,255,0.11)),
+      radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 36%);
+    opacity: 0.75;
+  }
+
+  .header, .mode-toggle, .body { position: relative; z-index: 1; }
+
   .header {
-    padding: 24px 28px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
+    padding: 24px 26px 18px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
+    border-bottom: 1px solid var(--border-soft);
   }
 
   .bolt {
-    width: 36px; height: 36px;
-    background: var(--accent);
-    border-radius: 8px;
+    width: 44px; height: 44px;
+    border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
+    font-size: 22px;
+    color: #06110d;
+    background: linear-gradient(135deg, var(--accent), #baffdf);
+    box-shadow: 0 0 24px rgba(0,229,160,0.28), inset 0 1px 0 rgba(255,255,255,0.5);
+  }
+
+  .header h1 { font-size: 22px; font-weight: 800; line-height: 1; letter-spacing: -0.5px; }
+  .header p { margin-top: 5px; font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.4px; }
+
+  .theme-toggle { border: 1px solid var(--border-soft); border-radius: 999px; padding: 4px; display: flex; gap: 4px; background: rgba(255,255,255,0.05); }
+  .theme-btn { border: none; width: 34px; height: 30px; border-radius: 999px; cursor: pointer; background: transparent; color: var(--muted); font-size: 14px; transition: all 0.2s ease; }
+  .theme-btn.active { background: linear-gradient(135deg, var(--accent), #80ffd1); color: #06110d; box-shadow: 0 0 18px rgba(0,229,160,0.2); }
+
+  .mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 20px 26px 0; padding: 5px; border-radius: 14px; background: rgba(9,13,20,0.16); border: 1px solid var(--border-soft); }
+  .mode-btn { border: none; border-radius: 10px; padding: 11px 10px; cursor: pointer; color: var(--muted); background: transparent; font-size: 13px; font-weight: 700; transition: all 0.2s ease; }
+  .mode-btn:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+  .mode-btn.active { color: #06110d; background: linear-gradient(135deg, var(--accent), #80ffd1); box-shadow: 0 0 22px rgba(0,229,160,0.25); }
+
+  .body { padding: 22px 26px 26px; }
+  .field { margin-bottom: 17px; }
+  label { display: block; margin-bottom: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .input-wrap { position: relative; display: flex; align-items: center; }
+  .prefix { position: absolute; left: 15px; z-index: 1; pointer-events: none; font-family: var(--mono); font-size: 15px; color: var(--accent); }
+  .suffix { position: absolute; right: 15px; pointer-events: none; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+  input[type="number"] {
+    width: 100%; height: 48px; border: 1px solid var(--border); border-radius: 13px; padding: 12px 14px 12px 38px; outline: none; color: var(--text); background: var(--input-bg); font-family: var(--mono); font-size: 17px; transition: all 0.2s ease; -moz-appearance: textfield;
+  }
+  input.no-prefix { padding-left: 14px; padding-right: 54px; }
+  input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"]::placeholder { color: var(--muted2); }
+  input[type="number"]:focus { border-color: rgba(0,229,160,0.72); box-shadow: 0 0 0 4px rgba(0,229,160,0.1), 0 0 22px rgba(0,229,160,0.08); }
+
+  .divider { height: 1px; margin: 22px 0; position: relative; background: var(--border-soft); }
+  .divider span { position: absolute; top: 50%; left: 50%; padding: 0 12px; transform: translate(-50%, -50%); background: var(--panel-solid); color: var(--muted); font-size: 10px; font-family: var(--mono); letter-spacing: 1.2px; }
+
+  .empty-state { padding: 22px; border-radius: 15px; border: 1px dashed rgba(127,139,159,0.35); color: var(--muted); background: rgba(127,139,159,0.08); text-align: center; font-family: var(--mono); font-size: 13px; }
+  .error-state { padding: 22px; border-radius: 15px; border: 1px dashed rgba(255,107,107,0.45); color: var(--danger); background: rgba(255,107,107,0.08); text-align: center; font-family: var(--mono); font-size: 13px; }
+  .tariff-note { margin-bottom: 14px; padding: 11px 13px; border-radius: 12px; color: var(--text); background: rgba(0,229,160,0.075); border: 1px solid rgba(0,229,160,0.18); font-family: var(--mono); font-size: 11px; text-align: center; }
+  .result-box { overflow: hidden; border-radius: 18px; border: 1px solid rgba(127,139,159,0.18); background: linear-gradient(180deg, rgba(0,229,160,0.08), rgba(0,183,255,0.045)), rgba(127,139,159,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 16px 40px rgba(0,0,0,0.12); }
+  .result-main { padding: 20px; display: flex; justify-content: space-between; gap: 16px; align-items: flex-end; border-bottom: 1px solid var(--border-soft); }
+  .result-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.1px; color: var(--muted); }
+  .result-sub { margin-top: 5px; font-size: 12px; color: var(--muted2); }
+  .result-value { flex-shrink: 0; font-family: var(--mono); font-size: 34px; color: var(--accent); line-height: 1; text-shadow: 0 0 22px rgba(0,229,160,0.25); }
+  .result-value.rands { color: var(--accent2); text-shadow: 0 0 22px rgba(0,183,255,0.22); }
+  .breakdown { display: grid; gap: 9px; padding: 17px 20px 20px; }
+  .breakdown-row { display: flex; justify-content: space-between; gap: 14px; font-family: var(--mono); font-size: 12px; }
+  .bk-label { color: var(--muted); }
+  .bk-val { color: var(--text); text-align: right; }
+  .bk-val.neg { color: var(--warn); }
+  .bk-val.pos { color: var(--accent); }
+  .total-row { margin-top: 4px; padding-top: 11px; border-top: 1px solid var(--border-soft); }
+  .total-row .bk-label { color: var(--text); font-weight: 800; }
+  .total-row .bk-val { color: var(--accent2); font-size: 14px; }
+
+  .settings-toggle { margin-top: 16px; text-align: center; }
+  .settings-toggle button { border: none; cursor: pointer; color: var(--muted); background: transparent; font-family: var(--mono); font-size: 11px; text-decoration: underline; letter-spacing: 0.4px; }
+  .settings-toggle button:hover { color: var(--text); }
+  .settings-panel { display: none; margin-top: 16px; padding: 17px; border-radius: 16px; background: rgba(0,183,255,0.055); border: 1px solid rgba(0,183,255,0.16); }
+  .settings-panel.open { display: block; }
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .settings-grid .field { margin-bottom: 0; }
+  .settings-grid input[type="number"] { height: 43px; font-size: 14px; }
+
+  /* MSC block */
+  .msc-block {
+    margin-top: 18px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: rgba(0,183,255,0.055);
+    border: 1px solid rgba(0,183,255,0.16);
+  }
+
+  .msc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .msc-title {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent2);
+    font-family: var(--mono);
+  }
+
+  .msc-check-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--muted);
+    user-select: none;
+  }
+
+  .msc-check-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--accent);
     flex-shrink: 0;
   }
 
-  .header h1 {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-  }
+  .msc-input { margin-top: 12px; }
+  .msc-input input[type="number"] { height: 43px; font-size: 14px; }
 
-  .header p {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 2px;
+  .msc-note {
+    margin-top: 7px;
+    font-size: 10px;
     font-family: var(--mono);
-  }
-
-  .mode-toggle {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-    margin: 24px 28px 0;
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 4px;
-    border: 1px solid var(--border);
-  }
-
-  .mode-btn {
-    padding: 10px;
-    border: none;
-    background: transparent;
-    color: var(--muted);
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: all 0.2s;
+    color: var(--muted2);
     letter-spacing: 0.3px;
   }
 
-  .mode-btn.active {
-    background: var(--accent);
-    color: #000;
-  }
-
-  .body { padding: 24px 28px 28px; }
-
-  .field { margin-bottom: 18px; }
-
-  label {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    font-family: var(--mono);
-  }
-
-  .input-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-
-  .prefix {
-    position: absolute;
-    left: 14px;
-    font-family: var(--mono);
-    font-size: 14px;
-    color: var(--accent);
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  input[type="number"] {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    padding: 12px 14px 12px 34px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 16px;
-    outline: none;
-    transition: border-color 0.2s;
-    -moz-appearance: textfield;
-  }
-
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
-
-  input[type="number"]:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0,229,160,0.1);
-  }
-
-  input.no-prefix { padding-left: 14px; }
-
-  .suffix {
-    position: absolute;
-    right: 14px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 22px 0;
-    position: relative;
-  }
-
-  .divider span {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--panel);
-    padding: 0 10px;
-    font-size: 10px;
-    font-family: var(--mono);
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
-
-  .result-box {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-  }
-
-  .result-main {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 16px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .result-label {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: var(--muted);
-    font-family: var(--mono);
-  }
-
-  .result-value {
-    font-family: var(--mono);
-    font-size: 28px;
-    color: var(--accent);
-    line-height: 1;
-  }
-
-  .result-value.rands { color: var(--accent2); }
-
-  .breakdown { display: grid; gap: 8px; }
-
-  .breakdown-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    font-family: var(--mono);
-  }
-
-  .breakdown-row .bk-label { color: var(--muted); }
-  .breakdown-row .bk-val { color: var(--text); }
-  .breakdown-row .bk-val.neg { color: var(--warn); }
-  .breakdown-row .bk-val.pos { color: var(--accent); }
-
-  .tariff-note {
-    background: rgba(0,229,160,0.05);
-    border: 1px solid rgba(0,229,160,0.15);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 11px;
-    font-family: var(--mono);
-    color: var(--accent);
-    text-align: center;
-    margin-bottom: 16px;
-  }
-
-  .settings-toggle {
-    text-align: center;
-    margin-top: 16px;
-  }
-
-  .settings-toggle button {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 11px;
-    font-family: var(--mono);
-    cursor: pointer;
-    text-decoration: underline;
-    letter-spacing: 0.5px;
-  }
-
-  .settings-toggle button:hover { color: var(--text); }
-
-  .settings-panel {
-    display: none;
-    background: rgba(0,153,255,0.04);
-    border: 1px solid rgba(0,153,255,0.15);
-    border-radius: 10px;
-    padding: 18px;
-    margin-top: 16px;
-  }
-
-  .settings-panel.open { display: block; }
-
-  .settings-panel label { color: #4a9aba; }
-
-  .settings-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 4px;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 20px;
-    color: var(--muted);
-    font-size: 13px;
-    font-family: var(--mono);
+  @media (max-width: 430px) {
+    body { align-items: flex-start; }
+    .card { border-radius: 18px; }
+    .header { grid-template-columns: auto 1fr; padding: 21px 20px 16px; gap: 10px; }
+    .theme-toggle { grid-column: 1 / -1; justify-self: start; margin-top: 4px; }
+    .theme-btn { width: 31px; height: 28px; }
+    .mode-toggle { margin-left: 20px; margin-right: 20px; }
+    .body { padding: 20px; }
+    .settings-grid { grid-template-columns: 1fr; }
+    .result-main { align-items: flex-start; flex-direction: column; }
+    .result-value { font-size: 32px; }
   }
 </style>
 </head>
-<body>
-
-<div class="card">
-  <div class="header">
-    <div class="bolt">⚡</div>
-    <div>
-      <h1>Unit Calculator</h1>
-      <p>EKURHULENI DOMESTIC B · 15% VAT</p>
-    </div>
-  </div>
-
-  <div class="mode-toggle">
-    <button class="mode-btn active" onclick="setMode('rands')">Rands → Units</button>
-    <button class="mode-btn" onclick="setMode('units')">Units → Rands</button>
-  </div>
-
-  <div class="body">
-
-    <div id="input-rands" class="field">
-      <label>Amount to Spend</label>
-      <div class="input-wrap">
-        <span class="prefix">R</span>
-        <input type="number" id="rands-input" placeholder="550.00" step="0.01" oninput="calc()">
+<body data-theme="dark">
+  <main class="card" aria-labelledby="app-title">
+    <section class="header">
+      <div class="bolt" aria-hidden="true">&#x26A1;</div>
+      <div>
+        <h1 id="app-title">Leano Complex Calculator</h1>
+        <p>EKURHULENI DOMESTIC B &middot; 15% VAT</p>
       </div>
-    </div>
-
-    <div id="input-units" class="field" style="display:none">
-      <label>Units You Want</label>
-      <div class="input-wrap">
-        <input type="number" id="units-input" class="no-prefix" placeholder="127.4" step="0.1" oninput="calc()">
-        <span class="suffix">kWh</span>
+      <div class="theme-toggle" aria-label="Theme toggle">
+        <button class="theme-btn active" id="darkBtn" type="button" data-theme-btn="dark" title="Dark mode">&#x1F319;</button>
+        <button class="theme-btn" id="lightBtn" type="button" data-theme-btn="light" title="Light mode">&#x2600;&#xFE0F;</button>
       </div>
-    </div>
+    </section>
 
-    <div class="divider"><span>RESULT</span></div>
+    <section class="mode-toggle" aria-label="Calculation mode">
+      <button class="mode-btn active" id="randsModeBtn" type="button" data-mode="rands">Rands &rarr; Units</button>
+      <button class="mode-btn" id="unitsModeBtn" type="button" data-mode="units">Units &rarr; Rands</button>
+    </section>
 
-    <div id="output">
-      <div class="empty-state">Enter an amount above</div>
-    </div>
-
-    <div class="settings-toggle">
-      <button onclick="toggleSettings()">⚙ adjust rates</button>
-    </div>
-
-    <div class="settings-panel" id="settings">
-      <div class="settings-grid">
-        <div class="field">
-          <label>Rate (R/unit excl. VAT)</label>
-          <div class="input-wrap">
-            <span class="prefix">R</span>
-            <input type="number" id="rate" value="3.57" step="0.0001" oninput="calc()">
-          </div>
-        </div>
-        <div class="field">
-          <label>Vend Fee %</label>
-          <div class="input-wrap">
-            <input type="number" id="vend-pct" class="no-prefix" value="5" step="0.1" oninput="calc()">
-            <span class="suffix">%</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Monthly Service Charge - always visible -->
-    <div style="margin-top:20px;background:rgba(0,153,255,0.04);border:1px solid rgba(0,153,255,0.15);border-radius:10px;padding:16px 18px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <label style="margin:0;color:#4a9aba;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;font-family:var(--mono)">Monthly Service Charge</label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted);margin:0;font-family:var(--mono)">
-          <input type="checkbox" id="msc-toggle" onchange="toggleMSC()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
-          Include
-        </label>
-      </div>
-      <div id="msc-field" style="display:none;margin-top:12px">
+    <section class="body">
+      <div id="input-rands" class="field">
+        <label for="rands-input">Amount to Spend</label>
         <div class="input-wrap">
-          <span class="prefix">R</span>
-          <input type="number" id="msc" value="79.41" step="0.01" oninput="calc()" placeholder="79.41">
+          <span class="prefix" aria-hidden="true">R</span>
+          <input type="number" id="rands-input" inputmode="decimal" min="0" max="1000000" placeholder="550.00" step="0.01" autocomplete="off" />
         </div>
-        <div style="font-size:10px;font-family:var(--mono);color:var(--muted);margin-top:6px">excl. VAT · added on top of your purchase total</div>
       </div>
-    </div>
 
-  </div>
-</div>
+      <div id="input-units" class="field" hidden>
+        <label for="units-input">Units You Want</label>
+        <div class="input-wrap">
+          <input type="number" id="units-input" class="no-prefix" inputmode="decimal" min="0" max="1000000" placeholder="127.4" step="0.1" autocomplete="off" />
+          <span class="suffix" aria-hidden="true">kWh</span>
+        </div>
+      </div>
+
+      <div class="divider" aria-hidden="true"><span>RESULT</span></div>
+      <div id="output" aria-live="polite"></div>
+
+      <!-- Monthly Service Charge — always visible, amount baked in -->
+      <div class="msc-block">
+        <div class="msc-header">
+          <span class="msc-title">Monthly Service Charge</span>
+          <label class="msc-check-label">
+            <input type="checkbox" id="mscToggle" />
+            Include
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-toggle">
+        <button id="settingsToggle" type="button" aria-expanded="false" aria-controls="settings">&#x2699; adjust rates</button>
+      </div>
+
+      <div class="settings-panel" id="settings">
+        <div class="settings-grid">
+          <div class="field">
+            <label for="rate">Rate excl. VAT</label>
+            <div class="input-wrap"><span class="prefix" aria-hidden="true">R</span><input type="number" id="rate" inputmode="decimal" min="0.0001" max="1000" value="3.6760" step="0.0001" autocomplete="off" /></div>
+          </div>
+          <div class="field">
+            <label for="vend-fee">Vend Fee</label>
+            <div class="input-wrap"><span class="prefix" aria-hidden="true">R</span><input type="number" id="vend-fee" inputmode="decimal" min="0" max="10000" value="23.91" step="0.01" autocomplete="off" /></div>
+          </div>
+          <div class="field">
+            <label for="channel-fee">Channel Fee</label>
+            <div class="input-wrap"><span class="prefix" aria-hidden="true">R</span><input type="number" id="channel-fee" inputmode="decimal" min="0" max="10000" value="27.97" step="0.01" autocomplete="off" /></div>
+          </div>
+          <div class="field">
+            <label for="discount">Discount</label>
+            <div class="input-wrap"><span class="prefix" aria-hidden="true">R</span><input type="number" id="discount" inputmode="decimal" min="0" max="10000" value="27.97" step="0.01" autocomplete="off" /></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
 <script>
-  let mode = 'rands';
+(() => {
+  'use strict';
 
-  // Vend fee = 5% of total excl. VAT (confirmed across all slips)
-  // totalExcl = elecExcl + msc + vendFee
-  // vendFee = 0.05 * totalExcl
-  // So: totalExcl = elecExcl + msc + 0.05*totalExcl
-  //     0.95 * totalExcl = elecExcl + msc
-  //     totalExcl = (elecExcl + msc) / 0.95
+  const VAT_RATE = 0.15;
+  const MSC_AMOUNT = 79.41; // excl. VAT, Tariff B monthly service charge
+  const DEFAULTS = Object.freeze({ rate: 3.6760, vendFee: 23.91, channelFee: 27.97, discount: 27.97 });
+  const STORAGE_KEYS = Object.freeze({ theme: 'unitCalculatorTheme', settings: 'unitCalculatorSettings' });
+
+  const $ = (id) => document.getElementById(id);
+  const elements = {
+    output: $('output'),
+    inputRandsPanel: $('input-rands'),
+    inputUnitsPanel: $('input-units'),
+    randsInput: $('rands-input'),
+    unitsInput: $('units-input'),
+    rate: $('rate'),
+    vendFee: $('vend-fee'),
+    channelFee: $('channel-fee'),
+    discount: $('discount'),
+    mscToggle: $('mscToggle'),
+    settings: $('settings'),
+    settingsToggle: $('settingsToggle'),
+    darkBtn: $('darkBtn'),
+    lightBtn: $('lightBtn'),
+    randsModeBtn: $('randsModeBtn'),
+    unitsModeBtn: $('unitsModeBtn')
+  };
+
+  let mode = 'rands';
+  let mscOn = false;
+
+  function safeNumber(value, fallback, min, max) {
+    const number = Number.parseFloat(value);
+    if (!Number.isFinite(number)) return fallback;
+    if (number < min) return fallback;
+    if (number > max) return fallback;
+    return number;
+  }
+
+  function money(value) { return value.toFixed(2); }
+  function units(value) { return value.toFixed(1); }
+
+  function clearNode(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+  function div(className, text) {
+    const el = document.createElement('div');
+    if (className) el.className = className;
+    if (text !== undefined) el.textContent = text;
+    return el;
+  }
+  function span(className, text) {
+    const el = document.createElement('span');
+    if (className) el.className = className;
+    if (text !== undefined) el.textContent = text;
+    return el;
+  }
+
+  function showMessage(styleClass, message) {
+    clearNode(elements.output);
+    elements.output.appendChild(div(styleClass, message));
+  }
 
   function getSettings() {
-    const mscEnabled = document.getElementById('msc-toggle').checked;
     return {
-      rate: parseFloat(document.getElementById('rate').value) || 3.57,
-      vendPct: (parseFloat(document.getElementById('vend-pct').value) || 5) / 100,
-      msc: mscEnabled ? (parseFloat(document.getElementById('msc').value) || 79.41) : 0,
-      mscEnabled,
-      vat: 0.15
+      rate: safeNumber(elements.rate.value, DEFAULTS.rate, 0.0001, 1000),
+      vendFee: safeNumber(elements.vendFee.value, DEFAULTS.vendFee, 0, 10000),
+      channelFee: safeNumber(elements.channelFee.value, DEFAULTS.channelFee, 0, 10000),
+      discount: safeNumber(elements.discount.value, DEFAULTS.discount, 0, 10000),
+      msc: mscOn ? MSC_AMOUNT : 0,
+      vat: VAT_RATE
     };
   }
 
-  function toggleMSC() {
-    const on = document.getElementById('msc-toggle').checked;
-    document.getElementById('msc-field').style.display = on ? 'block' : 'none';
+  function saveSettings() {
+    try {
+      const s = getSettings();
+      s.mscOn = mscOn;
+      localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(s));
+    } catch (_) {}
+  }
+
+  function loadSettings() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.settings) || '{}');
+      if (stored && typeof stored === 'object') {
+        elements.rate.value = safeNumber(stored.rate, DEFAULTS.rate, 0.0001, 1000).toString();
+        elements.vendFee.value = safeNumber(stored.vendFee, DEFAULTS.vendFee, 0, 10000).toString();
+        elements.channelFee.value = safeNumber(stored.channelFee, DEFAULTS.channelFee, 0, 10000).toString();
+        elements.discount.value = safeNumber(stored.discount, DEFAULTS.discount, 0, 10000).toString();
+        if (stored.mscOn) setMsc(true);
+      }
+    } catch (_) {}
+  }
+
+  function setTheme(theme) {
+    const cleanTheme = theme === 'light' ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', cleanTheme);
+    elements.darkBtn.classList.toggle('active', cleanTheme === 'dark');
+    elements.lightBtn.classList.toggle('active', cleanTheme === 'light');
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', cleanTheme === 'dark' ? '#151922' : '#eef3f8');
+    try { localStorage.setItem(STORAGE_KEYS.theme, cleanTheme); } catch (_) {}
+  }
+
+  function setMode(selectedMode) {
+    mode = selectedMode === 'units' ? 'units' : 'rands';
+    elements.randsModeBtn.classList.toggle('active', mode === 'rands');
+    elements.unitsModeBtn.classList.toggle('active', mode === 'units');
+    elements.inputRandsPanel.hidden = mode !== 'rands';
+    elements.inputUnitsPanel.hidden = mode !== 'units';
+    showMessage('empty-state', mode === 'rands' ? 'Enter an amount above' : 'Enter units above');
     calc();
   }
 
-  function setMode(m) {
-    mode = m;
-    document.querySelectorAll('.mode-btn').forEach((b, i) => {
-      b.classList.toggle('active', (i === 0 && m === 'rands') || (i === 1 && m === 'units'));
-    });
-    document.getElementById('input-rands').style.display = m === 'rands' ? '' : 'none';
-    document.getElementById('input-units').style.display = m === 'units' ? '' : 'none';
-    document.getElementById('output').innerHTML = '<div class="empty-state">Enter an amount above</div>';
+  function setMsc(on) {
+    mscOn = on;
+    elements.mscToggle.checked = mscOn;
+    calc();
+  }
+
+  function addBreakdownRow(parent, label, value, valueClass) {
+    const row = div('breakdown-row');
+    row.appendChild(span('bk-label', label));
+    row.appendChild(span(valueClass ? 'bk-val ' + valueClass : 'bk-val', value));
+    parent.appendChild(row);
+  }
+
+  function renderResult(data) {
+    clearNode(elements.output);
+
+    const note = div('tariff-note', 'Based on your slip: R' + money(data.settings.rate) + ' / kWh excl. VAT \u00B7 net fee R' + money(data.netFeeExcl) + ' excl.');
+    const box = div('result-box');
+    const resultMain = div('result-main');
+    const labelWrap = div();
+    labelWrap.appendChild(div('result-label', mode === 'rands' ? 'Units You Get' : 'Total to Pay'));
+    labelWrap.appendChild(div('result-sub', mode === 'rands' ? 'Estimated prepaid electricity' : 'Estimated VAT inclusive total'));
+    resultMain.appendChild(labelWrap);
+
+    const valueEl = div(mode === 'units' ? 'result-value rands' : 'result-value');
+    valueEl.textContent = mode === 'rands' ? units(data.units) + ' kWh' : 'R ' + money(data.totalIncl);
+    resultMain.appendChild(valueEl);
+
+    const breakdown = div('breakdown');
+    addBreakdownRow(breakdown, '\u26A1 Electricity excl. VAT', 'R ' + money(data.electricityExcl));
+    addBreakdownRow(breakdown, '\uD83D\uDCB0 Vend fee excl. VAT', 'R ' + money(data.settings.vendFee), 'neg');
+    addBreakdownRow(breakdown, '\uD83D\uDCB3 Channel fee excl. VAT', 'R ' + money(data.settings.channelFee), 'neg');
+    addBreakdownRow(breakdown, '\u2705 Discount excl. VAT', '-R ' + money(data.settings.discount), 'pos');
+    if (mscOn && data.settings.msc > 0) {
+      addBreakdownRow(breakdown, '\uD83D\uDDD3 Monthly service charge', 'R ' + money(data.settings.msc), 'neg');
+    }
+    addBreakdownRow(breakdown, 'VAT 15%', 'R ' + money(data.totalVat), 'neg');
+
+    const totalRow = div('breakdown-row total-row');
+    totalRow.appendChild(span('bk-label', 'TOTAL VAT INCL.'));
+    totalRow.appendChild(span('bk-val', 'R ' + money(data.totalIncl)));
+    breakdown.appendChild(totalRow);
+
+    addBreakdownRow(breakdown, 'Effective rate', 'R ' + money(data.rateIncl) + ' / kWh');
+    box.appendChild(resultMain);
+    box.appendChild(breakdown);
+    elements.output.appendChild(note);
+    elements.output.appendChild(box);
+  }
+
+  function calc() {
+    const settings = getSettings();
+    const netFeeExcl = settings.vendFee + settings.channelFee - settings.discount + settings.msc;
+
+    if (netFeeExcl < 0) {
+      showMessage('error-state', 'Discount cannot be higher than vend fee plus channel fee.');
+      return;
+    }
+
+    var unitsValue;
+    var totalIncl;
+    var electricityExcl;
+
+    if (mode === 'rands') {
+      const amount = safeNumber(elements.randsInput.value, 0, 0, 1000000);
+      if (amount <= 0) { showMessage('empty-state', 'Enter an amount above'); return; }
+      totalIncl = amount;
+      const totalExcl = totalIncl / (1 + settings.vat);
+      electricityExcl = totalExcl - netFeeExcl;
+      if (electricityExcl <= 0) { showMessage('error-state', 'Amount too low to cover fixed fees.'); return; }
+      unitsValue = electricityExcl / settings.rate;
+    } else {
+      unitsValue = safeNumber(elements.unitsInput.value, 0, 0, 1000000);
+      if (unitsValue <= 0) { showMessage('empty-state', 'Enter units above'); return; }
+      electricityExcl = unitsValue * settings.rate;
+      const totalExcl = electricityExcl + netFeeExcl;
+      totalIncl = totalExcl * (1 + settings.vat);
+    }
+
+    if (!Number.isFinite(unitsValue) || !Number.isFinite(totalIncl) || unitsValue <= 0 || totalIncl <= 0) {
+      showMessage('error-state', 'The calculation could not be completed. Please check your values.');
+      return;
+    }
+
+    const totalExcl = totalIncl / (1 + settings.vat);
+    const totalVat = totalIncl - totalExcl;
+    const rateIncl = totalIncl / unitsValue;
+
+    renderResult({ settings, netFeeExcl, units: unitsValue, totalIncl, electricityExcl, totalVat, rateIncl });
+    saveSettings();
   }
 
   function toggleSettings() {
-    document.getElementById('settings').classList.toggle('open');
+    const isOpen = elements.settings.classList.toggle('open');
+    elements.settingsToggle.setAttribute('aria-expanded', String(isOpen));
   }
 
-  function fmt(n) { return n.toFixed(2); }
-  function fmtU(n) { return n.toFixed(1); }
+  function init() {
+    loadSettings();
+    const savedTheme = (() => {
+      try { return localStorage.getItem(STORAGE_KEYS.theme); } catch (_) { return null; }
+    })();
+    setTheme(savedTheme || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
 
-  function calc() {
-    const s = getSettings();
+    elements.darkBtn.addEventListener('click', () => setTheme('dark'));
+    elements.lightBtn.addEventListener('click', () => setTheme('light'));
+    elements.randsModeBtn.addEventListener('click', () => setMode('rands'));
+    elements.unitsModeBtn.addEventListener('click', () => setMode('units'));
+    elements.settingsToggle.addEventListener('click', toggleSettings);
 
-    let units, totalIncl, totalExcl, elecExcl, vendFee;
+    elements.mscToggle.addEventListener('change', () => setMsc(elements.mscToggle.checked));
 
-    if (mode === 'rands') {
-      const val = parseFloat(document.getElementById('rands-input').value);
-      if (!val || val <= 0) { document.getElementById('output').innerHTML = '<div class="empty-state">Enter an amount above</div>'; return; }
-      totalIncl = val;
-      totalExcl = totalIncl / (1 + s.vat);
-      vendFee = s.vendPct * totalExcl;
-      elecExcl = totalExcl - vendFee - s.msc;
-      if (elecExcl <= 0) { document.getElementById('output').innerHTML = '<div class="empty-state">Amount too low to cover fees</div>'; return; }
-      units = elecExcl / s.rate;
-    } else {
-      units = parseFloat(document.getElementById('units-input').value);
-      if (!units || units <= 0) { document.getElementById('output').innerHTML = '<div class="empty-state">Enter units above</div>'; return; }
-      elecExcl = units * s.rate;
-      // totalExcl = (elecExcl + msc) / (1 - vendPct)
-      totalExcl = (elecExcl + s.msc) / (1 - s.vendPct);
-      vendFee = s.vendPct * totalExcl;
-      totalIncl = totalExcl * (1 + s.vat);
+    [elements.randsInput, elements.unitsInput, elements.rate, elements.vendFee, elements.channelFee, elements.discount].forEach((input) => {
+      input.addEventListener('input', calc);
+      input.addEventListener('change', calc);
+    });
+
+    showMessage('empty-state', 'Enter an amount above');
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
     }
-
-    const totalVat = totalIncl - totalExcl;
-    const mscIncl = s.msc * (1 + s.vat);
-
-    document.getElementById('output').innerHTML = `
-      <div class="tariff-note">R${fmt(s.rate)}/unit · vend fee ${(s.vendPct*100).toFixed(0)}% of total excl. VAT${s.mscEnabled ? ` · +R${fmt(mscIncl)} service charge` : ''}</div>
-      <div class="result-box">
-        <div class="result-main">
-          <div>
-            <div class="result-label">${mode === 'rands' ? 'Units You Get' : 'Total to Pay'}</div>
-          </div>
-          <div class="result-value ${mode === 'units' ? 'rands' : ''}">
-            ${mode === 'rands' ? fmtU(units) + ' kWh' : 'R ' + fmt(totalIncl)}
-          </div>
-        </div>
-        <div class="breakdown">
-          <div class="breakdown-row">
-            <span class="bk-label">Electricity (excl. VAT)</span>
-            <span class="bk-val">R ${fmt(elecExcl)}</span>
-          </div>
-          <div class="breakdown-row">
-            <span class="bk-label">Vend fee 5% (excl. VAT)</span>
-            <span class="bk-val neg">R ${fmt(vendFee)}</span>
-          </div>
-          ${s.mscEnabled ? `
-          <div class="breakdown-row">
-            <span class="bk-label">Monthly service charge (excl. VAT)</span>
-            <span class="bk-val neg">R ${fmt(s.msc)}</span>
-          </div>` : ''}
-          <div class="breakdown-row">
-            <span class="bk-label">VAT (15%)</span>
-            <span class="bk-val neg">R ${fmt(totalVat)}</span>
-          </div>
-          <div class="breakdown-row" style="padding-top:8px;border-top:1px solid var(--border);margin-top:4px">
-            <span class="bk-label" style="color:var(--text);font-weight:700">TOTAL (VAT INCL.)</span>
-            <span class="bk-val" style="color:var(--accent2);font-size:14px">R ${fmt(totalIncl)}</span>
-          </div>
-          <div class="breakdown-row">
-            <span class="bk-label">Effective rate per unit</span>
-            <span class="bk-val">R ${fmt(totalIncl / units)} / kWh</span>
-          </div>
-        </div>
-      </div>
-    `;
   }
+
+  init();
+})();
 </script>
 </body>
 </html>
